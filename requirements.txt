@@ -1,0 +1,6 @@
+django
+djangorestframework
+channels
+openai
+daphne
+python-dotenv

@@ -15,12 +15,12 @@ class OpenRouterEngine:
     """
     A connector for the OpenRouter API.
     """
-    def get_response(self, user_message: str) -> str:
+    def get_response(self, conversation_history: list) -> str:
         """
-        Sends a message to the OpenRouter API and gets a response.
+        Sends a conversation history to the OpenRouter API and gets a response.
 
         Args:
-            user_message: The message from the user.
+            conversation_history: A list of message objects from the conversation.
 
         Returns:
             The response text from the API.
@@ -28,17 +28,18 @@ class OpenRouterEngine:
         knowledge_base_text = get_knowledge_base_text()
         full_system_prompt = f"{SYSTEM_PROMPT}\n\n{knowledge_base_text}"
 
-        try:
-            messages = [
-                ChatCompletionSystemMessageParam(role="system", content=full_system_prompt),
-                ChatCompletionUserMessageParam(role="user", content=user_message)
-            ]
+        messages = [
+            ChatCompletionSystemMessageParam(role="system", content=full_system_prompt)
+        ]
+        for message in conversation_history:
+            messages.append(ChatCompletionUserMessageParam(role=message["role"], content=message["content"]))
 
+        try:
             response = client.chat.completions.create(
-                model=os.getenv("OPEN_ROUTER_MODEL"),
+                model="openai/gpt-3.5-turbo-16k",
                 messages=messages,
-                max_tokens=os.getenv("OPEN_ROUTER_MAX_TOKENS"),
-                temperature=os.getenv("OPEN_ROUTER_TEMPERATURE"),
+                max_tokens=500,
+                temperature=0.5,
                 extra_headers={
                     "HTTP-Referer": os.getenv("OPEN_ROUTER_REFERER"),
                     "X-Title": "LeanChat AI",
@@ -46,6 +47,5 @@ class OpenRouterEngine:
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
-            # Handle potential API errors
             print(f"An error occurred with OpenRouter API: {e}")
             return "Sorry, I'm having trouble connecting to my brain right now. Please try again later."

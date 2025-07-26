@@ -1,0 +1,19 @@
+services:
+  leanchat:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    container_name: leanchat_app
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - static_volume:/app/src/static
+      - media_volume:/app/src/media
+
+volumes:
+  static_volume:
+  media_volume:
+
